@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"module": "commonjs",
+		"target": "es2017",
+		"noImplicitAny": true,
+		"removeComments": true,
+		"sourceMap": true
+	},
+	"exclude": ["node_modules"],
+	"include": [".eslintrc.js", "src/**/*.ts"]
+}
