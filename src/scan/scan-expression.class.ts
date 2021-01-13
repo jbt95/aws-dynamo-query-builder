@@ -1,13 +1,16 @@
 import { DynamoDB } from 'aws-sdk';
 import Builder from '../builder.interface';
 import { Operator } from '../operators.enum';
+import ExpressionAttributeNames from '../expressions/expression.attribute-names.class';
+import ExpressionAttributeValues from '../expressions/expression.attribute-value.class';
+import FilterExpression from '../expressions/expression.filter.class';
 
 type Scan = DynamoDB.ScanInput;
 
 type Schema = Record<string, any>;
 
-interface WhereInput<Keys, Value> {
-	key: keyof Keys;
+interface WhereInput<Attributes, Value> {
+	key: keyof Attributes;
 	operator: Operator;
 	value: Value;
 	expressionAttributeName?: string;
@@ -17,9 +20,9 @@ export default class ScanBuilder<Attributes extends Schema> implements Builder<S
 	private ConsistentRead: DynamoDB.ConsistentRead;
 	private ExclusiveStartKey: DynamoDB.Key;
 	private Select: DynamoDB.Select;
-	private ExpressionAttributeNames: DynamoDB.ExpressionAttributeNameMap = {};
-	private ExpressionAttributeValues: DynamoDB.ExpressionAttributeValueMap = {};
-	private FilterExpression: DynamoDB.ConditionExpression = '';
+	private ExpressionAttributeNames: ExpressionAttributeNames = new ExpressionAttributeNames();
+	private ExpressionAttributeValues: ExpressionAttributeValues = new ExpressionAttributeValues();
+	private FilterExpression: FilterExpression = new FilterExpression();
 	private IndexName: DynamoDB.IndexName;
 	private Limit: DynamoDB.PositiveIntegerObject;
 	private ProjectionExpression: DynamoDB.ProjectionExpression;
@@ -33,15 +36,12 @@ export default class ScanBuilder<Attributes extends Schema> implements Builder<S
 	}
 
 	public where<T = unknown>(input: WhereInput<Attributes, T>) {
-		const en = this.addExpressionAttributeName(input.key as string, input.expressionAttributeName);
-		const ev = this.addExpressionAttributeValue<T>(input.key as string, input.value);
-		this.FilterExpression = this.FilterExpression.concat(
-			`${
-				this.FilterExpression.length > 0
-					? ` AND ${en} ${input.operator} ${ev}`
-					: `${en} ${input.operator} ${ev}`
-			}`,
+		const en = this.ExpressionAttributeNames.push(
+			input.key as string,
+			input.expressionAttributeName,
 		);
+		this.ExpressionAttributeValues.push<T>(input.key as string, input.value);
+		this.FilterExpression.add({ ...input, expressionAttributeName: en });
 
 		return this;
 	}
@@ -100,30 +100,14 @@ export default class ScanBuilder<Attributes extends Schema> implements Builder<S
 		return this;
 	}
 
-	private addExpressionAttributeName(key: string, expressionAttributeName?: string) {
-		const en = `#${expressionAttributeName === undefined ? key : expressionAttributeName}`;
-		this.ExpressionAttributeNames = Object.assign(this.ExpressionAttributeNames, {
-			[en]: key,
-		});
-
-		return en;
-	}
-
-	private addExpressionAttributeValue<T = unknown>(key: string, value: T) {
-		const ev = `:${key}`;
-		this.ExpressionAttributeValues = Object.assign(this.ExpressionAttributeValues, { [ev]: value });
-
-		return ev;
-	}
-
 	build(): Scan {
 		return {
 			ConsistentRead: this.ConsistentRead,
 			ExclusiveStartKey: this.ExclusiveStartKey,
 			Select: this.Select,
-			ExpressionAttributeNames: this.ExpressionAttributeNames,
-			ExpressionAttributeValues: this.ExpressionAttributeValues,
-			FilterExpression: this.FilterExpression,
+			ExpressionAttributeNames: this.ExpressionAttributeNames.value,
+			ExpressionAttributeValues: this.ExpressionAttributeValues.value,
+			FilterExpression: this.FilterExpression.value,
 			IndexName: this.IndexName,
 			Limit: this.Limit,
 			ProjectionExpression: this.ProjectionExpression,
