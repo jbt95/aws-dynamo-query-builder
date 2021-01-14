@@ -1,22 +1,23 @@
-import { Schema } from './schema.type';
+import { Schema } from './types/schema.type';
 import { comparatorExpression } from './comparator-expression';
 import { conditionExpression } from './condition-expression';
-import { Comparator, Condition } from './expressions.interface';
+import { Comparator, Condition } from './interfaces/expression.interface';
+import { expressionLinkedList } from './expression-linked-list';
 
-export const createExpression = <T extends Schema>() => {
-	let _expression: string = '';
-	const comparator: Comparator<T> = comparatorExpression<T>(
-		(predicate) => (_expression = predicate(_expression)),
-		() => condition,
-	);
-	const condition: Condition<T> = conditionExpression<T>(
-		(predicate) => (_expression = predicate(_expression)),
-		() => comparator,
-	);
+interface Expression<T> {
+	comparator: Comparator<T>;
+	condition: Condition<T>;
+	build: () => void;
+}
+
+export const createExpression = <T extends Schema>(): Expression<T> => {
+	const expressionsLinkedList = expressionLinkedList();
+	const comparator: Comparator<T> = comparatorExpression<T>(() => condition, expressionsLinkedList);
+	const condition: Condition<T> = conditionExpression<T>(() => comparator, expressionsLinkedList);
 
 	return {
 		comparator,
 		condition,
-		expression: () => _expression,
+		build: () => expressionsLinkedList.toDynamoString(),
 	};
 };

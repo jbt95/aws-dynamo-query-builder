@@ -1,28 +1,23 @@
-import { Comparator, Condition } from './expressions.interface';
-import { UpdateExpressionFunctor } from './functor.update-expression.type';
+import { Comparator, Condition } from './interfaces/expression.interface';
+import { ExpressionLinkedList, Kind } from './expression-linked-list';
 
 export const conditionExpression = <T>(
-	updateExpression: UpdateExpressionFunctor,
 	getComparatorExpressionRef: () => Comparator<T>,
-): Condition<T> => {
-	const _updateExpression = updateExpression;
-	const _getComparatorExpressionRef = getComparatorExpressionRef;
+	linkedList: ExpressionLinkedList,
+): Condition<T> => ({
+	and: () => {
+		linkedList.add({ kind: Kind.Condition, data: { type: ' AND ' } });
 
-	return {
-		and: () => {
-			_updateExpression((ex) => ex.concat(' AND '));
+		return getComparatorExpressionRef();
+	},
+	or: () => {
+		linkedList.add({ kind: Kind.Condition, data: { type: ' OR ' } });
 
-			return _getComparatorExpressionRef();
-		},
-		or: () => {
-			_updateExpression((ex) => ex.concat(' OR '));
+		return getComparatorExpressionRef();
+	},
+	not: () => {
+		linkedList.add({ kind: Kind.Condition, data: { type: ' NOT ' } });
 
-			return _getComparatorExpressionRef();
-		},
-		not: () => {
-			_updateExpression((ex) => ex.concat(' NOT '));
-
-			return _getComparatorExpressionRef();
-		},
-	};
-};
+		return getComparatorExpressionRef();
+	},
+});
