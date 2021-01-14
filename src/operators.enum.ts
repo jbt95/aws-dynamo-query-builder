@@ -5,4 +5,6 @@ export enum Operator {
 	LessThanOrEqual = '<=',
 	GreaterThan = '>',
 	GreaterThanOrEqual = '>=',
+	Between = '',
+	In = '',
 }
