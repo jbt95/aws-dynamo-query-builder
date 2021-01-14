@@ -137,7 +137,7 @@ module.exports = {
 		'no-multiple-empty-lines': 'off',
 		'no-new-wrappers': 'error',
 		'no-shadow': [
-			'warn',
+			'off',
 			{
 				hoist: 'all',
 			},
