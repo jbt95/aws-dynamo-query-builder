@@ -1,5 +1,6 @@
 import { Comparator, Condition } from './interfaces/expression.interface';
-import { ExpressionLinkedList, Kind } from './expression-linked-list';
+import { ExpressionLinkedList } from './linked-list/expression-linked-list';
+import { Kind } from './linked-list/kind.enum';
 
 export const conditionExpression = <T>(
 	getComparatorExpressionRef: () => Comparator<T>,

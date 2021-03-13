@@ -2,12 +2,12 @@ import { Schema } from './types/schema.type';
 import { comparatorExpression } from './comparator-expression';
 import { conditionExpression } from './condition-expression';
 import { Comparator, Condition } from './interfaces/expression.interface';
-import { expressionLinkedList } from './expression-linked-list';
+import { expressionLinkedList } from './linked-list/expression-linked-list';
 
 interface Expression<T> {
 	comparator: Comparator<T>;
 	condition: Condition<T>;
-	build: () => void;
+	build: () => string;
 }
 
 export const createExpression = <T extends Schema>(): Expression<T> => {

@@ -1,3 +1,19 @@
+/* eslint-disable @typescript-eslint/ban-types */
+export type BooleanMap<T> = {
+	[K in keyof T]: T[K] extends (infer U)[]
+		? U extends object
+			? BooleanMap<U>
+			: boolean
+		: T[K] extends object
+		? BooleanMap<T[K]>
+		: boolean;
+};
+
+export interface Operand {
+	alias: string;
+	value: unknown;
+}
+
 export interface Condition<T> {
 	and(): Comparator<T>;
 	or(): Comparator<T>;
@@ -11,10 +27,10 @@ export interface Comparator<T extends Record<string, any>> {
 	lessThanOrEqual(key: keyof T, value: unknown): Condition<T>;
 	greaterThan(key: keyof T, value: unknown): Condition<T>;
 	greaterThanOrEqual(key: keyof T, value: unknown): Condition<T>;
-	attributeExits(path: string): Condition<T>;
-	attributeNotExits(path: string): Condition<T>;
-	attributeType(path: string, type: string): Condition<T>;
-	beginsWith(path: string, subStr: string): Condition<T>;
-	contains(path: string, operand: string): Condition<T>;
-	size(path: string): Condition<T>;
+	attributeExits(path: Partial<BooleanMap<T>>): Condition<T>;
+	attributeNotExits(path: Partial<BooleanMap<T>>): Condition<T>;
+	attributeType(path: Partial<BooleanMap<T>>, type: string): Condition<T>;
+	beginsWith(path: Partial<BooleanMap<T>>, subStr: string): Condition<T>;
+	contains(path: Partial<BooleanMap<T>>, operand: Operand): Condition<T>;
+	size(path: Partial<BooleanMap<T>>): Condition<T>;
 }

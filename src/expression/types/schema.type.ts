@@ -1,1 +1,1 @@
-export type Schema = Record<string, unknown>;
+export type Schema = { [key: string]: unknown };
